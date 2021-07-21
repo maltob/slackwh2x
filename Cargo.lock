@@ -1710,6 +1710,7 @@ dependencies = [
  "env_logger",
  "json",
  "log",
+ "regex",
  "reqwest",
  "serde",
  "serde_json",

@@ -1,13 +1,14 @@
 
 use toml::{Value,map::Map};
 use std::fs;
-use crate::handlers::{handler,slack,teams};
+use crate::handlers::{slack,teams};
 use crate::handlers::handler::MessageHandler;
+use crate::emoji_replacement::EmojiReplacements;
 
 fn load_file(filename:&str) ->Result<String, &'static str> {
  match fs::read_to_string(filename) {
      Ok(contents) => Ok(contents),
-     Err(c) => Err("")
+     Err(_) => Err("")
  }
 }
 
@@ -31,11 +32,11 @@ pub fn lookup_key(key:&str) -> Result<String, &'static str> {
 
 
 // Check each url if there are multiple - TODO - Check what happens when there are not multiple
-pub fn run_handlers(key:&str, msg:crate::SlackMessage) -> Result<String, &'static str> {
+pub fn run_handlers(key:&str, msg:crate::SlackMessage, emoji_rep:&EmojiReplacements) -> Result<String, &'static str> {
     let urls = lookup_key(key).unwrap();
     
     for url in urls.split(";") {
-        handle_url(url,&msg);
+        handle_url(url,&msg,emoji_rep);
         println!("Handling {}",url);
     };
 
@@ -43,14 +44,14 @@ pub fn run_handlers(key:&str, msg:crate::SlackMessage) -> Result<String, &'stati
 }
 
 //Handle the URL with the current basic URL detection
-fn handle_url(url:&str, msg:&crate::SlackMessage) {
+fn handle_url(url:&str, msg:&crate::SlackMessage,emoji_rep:&EmojiReplacements) {
     if url.contains("https://hooks.slack.com/services") {
         //Slack
         let slackh = slack::SlackHandler {url:url.to_string()};
-        slackh.send(&msg);
+        slackh.send(&msg,emoji_rep).ok();
     }else if url.contains(".webhook.office.com/webhookb2") {
         //Teams
         let teamsh = teams::TeamsHandler {url:url.to_string()};
-        teamsh.send(&msg);
+        teamsh.send(&msg,emoji_rep).ok();
     }
 }
