@@ -26,7 +26,7 @@ impl  EmojiReplacements {
                 //Try to parse out the glyph via the unified attribute which is a set of chars with - between them
                     let mut valid = true;
                     let mut unichar :Vec<char> = vec![];
-                    for un in emoji["unified"].to_string().replace("\"","").split("-") {
+                    for un in emoji["unified"].to_string()[1..emoji["unified"].to_string().chars().count()-1].split("-") {
                        // Just in case something invalid is added
                        let parse_res = u32::from_str_radix(un,16);
                        if parse_res.is_err() {
@@ -40,7 +40,7 @@ impl  EmojiReplacements {
                     // Load in the unicode string
                     if valid {
                         let unicode_glyph = (unichar.into_iter()).collect::<String>();
-                        &self.emojis.insert(emoji["short_name"].to_string(),unicode_glyph);
+                        &self.emojis.insert(format!(":{}:",emoji["short_name"].to_string()[1..emoji["short_name"].to_string().chars().count()-1].to_string()),unicode_glyph);
                     }
 
             }
