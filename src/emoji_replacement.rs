@@ -53,7 +53,13 @@ impl  EmojiReplacements {
     }
 
     pub fn replace_emojis(&self,source_string:String)  ->Result<String,&'static str> {
-        Err("Not yet implemented")
+        let mut message = source_string.clone();
+        for (key,emoji) in &self.emojis {
+            message = message.replace(key, emoji);
+        }
+
+        Ok(message)
+       
     }
 
 }
