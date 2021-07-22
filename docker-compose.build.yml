@@ -7,3 +7,4 @@ services:
            - 8080:8080
         volumes:
             - ./slack2x.yaml:/app/slack2x.yaml
+            - ./data:/app/data
