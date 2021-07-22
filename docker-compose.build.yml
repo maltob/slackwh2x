@@ -6,4 +6,4 @@ services:
         ports:
            - 8080:8080
         volumes:
-            - slack2x.toml:/app/slack2x.toml
+            - slack2x.yaml:/app/slack2x.yaml
