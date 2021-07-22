@@ -3,6 +3,8 @@ use crate::handlers::handler;
 use serde::{Deserialize, Serialize};
 use reqwest::blocking::Client;
 use crate::emoji_replacement::EmojiReplacements;
+use lazy_static::lazy_static;
+use regex::Regex;
 
 pub struct TeamsHandler{
    pub url: String,
@@ -27,7 +29,7 @@ impl  TeamsHandler {
                 for field in flds {
                     {
                        
-                        factset.push(MessageCardFact {name: field.title.to_string(), value:field.value.to_string() });
+                        factset.push(MessageCardFact {name: emoji_rep.replace_emojis(field.title.to_string()).expect("Failed to convert emojis"), value: self.convert_slack_formatting(emoji_rep.replace_emojis(field.value.to_string()).expect("Failed to convert emojis")).expect("Failed to convert Slack")  });
                         
                       }
 
@@ -39,11 +41,18 @@ impl  TeamsHandler {
         let msg_body = MessageCardSection {title:" ".to_string(),facts:factset};
 
         // Text needs to have some length or teams will deny the card
-        let msg_content = MessageCardContent {context:"http://schema.org/extensions".to_string(), ttype:"MessageCard".to_string(), sections:vec![msg_body], text:" ".to_string(), title:emoji_rep.replace_emojis(msg.text.to_string()).expect("Failed to replace emojis")};
+        let msg_content = MessageCardContent {context:"http://schema.org/extensions".to_string(), ttype:"MessageCard".to_string(), sections:vec![msg_body], text:" ".to_string(), title: self.convert_slack_formatting(emoji_rep.replace_emojis(msg.text.to_string()).expect("Failed to replace emojis")).expect("Failed to replace Slack format")};
         Ok(msg_content)
     }
     
-   
+
+    fn convert_slack_formatting(&self, text:String) -> Result<String, &'static str> {
+        lazy_static! {
+            static ref URL_RE: Regex = Regex::new(r"<(?P<u>[a-zA-Z0-9:\.%/]+)\|(?P<t>[a-zA-Z0-9:\.%/ ]+)>").unwrap();
+        }
+        Ok(URL_RE.replace_all(&text,"[$t]($u)").to_string())
+
+    }
 }
 //
 
