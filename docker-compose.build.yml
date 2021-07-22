@@ -8,3 +8,6 @@ services:
         volumes:
             - ./slack2x.yaml:/app/slack2x.yaml
             - ./data:/app/data
+        environment:
+            - BIND_ADDR=0.0.0.0
+            - BIND_PORT=8080
