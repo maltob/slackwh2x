@@ -38,16 +38,14 @@ async fn main() -> std::io::Result<()> {
 
     // Load in the binding ports and addresses
     let bindv4 = env::var("BIND_ADDR").unwrap_or("0.0.0.0".to_string());
-    let bindv6 = env::var("BIND_ADDR_V6").unwrap_or("::".to_string());
     let port = u16::from_str_radix(&env::var("BIND_PORT").unwrap_or("8080".to_string()),10).unwrap_or(8080);
 
-    info!("Starting webserver on {}:{} and {}:{}",bindv4,port,bindv6,port);
+    info!("Starting webserver on {}:{}",bindv4,port);
     HttpServer::new(move || {
         App::new().app_data(state.clone()).service(post_message)
            
     })
     .bind((bindv4, port))?
-    .bind((bindv6, port))?
     .run()
     .await
 }
