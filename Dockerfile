@@ -10,4 +10,4 @@ EXPOSE 8080
 WORKDIR /app   
 COPY --from=0 /workdir/target/release/slack-hook-to-x /app
 COPY data /app/
-ENTRYPOINT ["/workdir/slack-hook-to-x"]
+ENTRYPOINT ["/app/slack-hook-to-x"]
