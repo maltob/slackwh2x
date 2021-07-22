@@ -1,16 +1,10 @@
 
-use yaml_rust::{YamlLoader, YamlEmitter};
+use yaml_rust::{YamlLoader};
 use std::fs;
 use crate::handlers::{slack,teams};
 use crate::handlers::handler::MessageHandler;
 use crate::emoji_replacement::EmojiReplacements;
 
-fn load_file(filename:&str) ->Result<String, &'static str> {
- match fs::read_to_string(filename) {
-     Ok(contents) => Ok(contents),
-     Err(_) => Err("")
- }
-}
 
 // Check for the mapping in the slack2x.toml file
 pub fn lookup_key(key:&str) -> Result<Vec<String>, &'static str> {

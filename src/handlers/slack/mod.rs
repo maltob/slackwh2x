@@ -7,7 +7,7 @@ pub struct SlackHandler{
     pub url: String,
 }
  impl handler::MessageHandler for SlackHandler {
-  fn   send (&self, msg:&crate::SlackMessage,emoji_rep:&EmojiReplacements) -> Result<String, &'static str> {
+  fn   send (&self, msg:&crate::SlackMessage,_emoji_rep:&EmojiReplacements) -> Result<String, &'static str> {
       //Send the message on to Slack
         let client = Client::new();
         let res = client.post(&self.url)
