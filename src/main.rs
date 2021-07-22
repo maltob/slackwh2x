@@ -15,7 +15,12 @@ async fn post_message(name: web::Path<(String,)>, body: web::Bytes, data: web::D
     let result:SlackMessage = serde_json::from_str(std::str::from_utf8(&body).unwrap()).unwrap();
     println!("{}",result.text);
     let emoji_handler = &*data.emojis.read().ok().unwrap();
-    HttpResponse::Ok().body( run_handlers(&name.into_inner().0.as_str(), result, emoji_handler).unwrap() )
+    let handlers = run_handlers(&name.into_inner().0.as_str(), result, emoji_handler);
+    match handlers {
+        Ok(h) => {HttpResponse::Ok().body( h )}
+        Err(v) => {HttpResponse::NotFound().body(v)}
+    }
+    
 
     
 }
