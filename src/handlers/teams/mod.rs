@@ -5,6 +5,7 @@ use reqwest::blocking::Client;
 use crate::emoji_replacement::EmojiReplacements;
 use lazy_static::lazy_static;
 use regex::Regex;
+use log::{debug};
 
 pub struct TeamsHandler{
    pub url: String,
@@ -65,9 +66,10 @@ impl  TeamsHandler {
             let teams_msg_res = self.convert_to_teams_simple(msg);
             match teams_msg_res {
                 Ok(res_msg) => {
-                    let _res = client.post(&self.url)
+                    let res = client.post(&self.url)
                     .body(serde_json::to_string(&res_msg).unwrap())
                     .send();
+                    debug!("Teams message status: {}",res.unwrap().status());
                     Ok("".to_string())
                 },
                 Err(_res_msg) => Err(""),
@@ -78,11 +80,11 @@ impl  TeamsHandler {
         
             match teams_msg_res {
                 Ok(res_msg) => {
-                    println!("Attachments! {}",serde_json::to_string_pretty(&res_msg).unwrap());
+                    debug!("Attachment Teams Message:\n {}",serde_json::to_string_pretty(&res_msg).unwrap());
                     let res = client.post(&self.url)
                     .body(serde_json::to_string_pretty(&res_msg).unwrap())
                     .send();
-                    println!("{}",res.unwrap().status());
+                    debug!("Teams message status: {}",res.unwrap().status());
                     Ok("".to_string())
                 },
                 Err(_res_msg) => Err(""),

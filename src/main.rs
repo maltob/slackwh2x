@@ -7,18 +7,21 @@ use mapping::{run_handlers};
 use serde::{Deserialize, Serialize};
 use std::sync::RwLock;
 use std::collections::HashMap;
+use log::{debug, info};
+use env_logger::Env;
+use std::env;
 
 // Take in posts for a webhook ase defined in the slack2x.toml
 #[post("/{name}")]
 async fn post_message(name: web::Path<(String,)>, body: web::Bytes, data: web::Data<AppState>) -> impl Responder {
-    println!("{}",std::str::from_utf8(&body).unwrap());
+    debug!("{}",std::str::from_utf8(&body).unwrap());
     let result:SlackMessage = serde_json::from_str(std::str::from_utf8(&body).unwrap()).unwrap();
-    println!("{}",result.text);
+    debug!("{}",result.text);
     let emoji_handler = &*data.emojis.read().ok().unwrap();
     let handlers = run_handlers(&name.into_inner().0.as_str(), result, emoji_handler);
     match handlers {
-        Ok(h) => {HttpResponse::Ok().body( h )}
-        Err(v) => {HttpResponse::NotFound().body(v)}
+        Ok(h) => {debug!("{}",h);HttpResponse::Ok().body( h )},
+        Err(v) => {debug!("{}",v);HttpResponse::NotFound().body(v)}
     }
     
 
@@ -28,15 +31,23 @@ async fn post_message(name: web::Path<(String,)>, body: web::Bytes, data: web::D
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    info!("Loading emoji data");
     let state = web::Data::new( AppState { emojis:RwLock::new(emoji_replacement::EmojiReplacements { emojis: HashMap::new() })});
     state.emojis.write().unwrap().load_emojis("./data/emoji/emoji.json".to_string()).ok();
 
+    // Load in the binding ports and addresses
+    let bindv4 = env::var("BIND_ADDR").unwrap_or("0.0.0.0".to_string());
+    let bindv6 = env::var("BIND_ADDR_V6").unwrap_or("::".to_string());
+    let port = u16::from_str_radix(&env::var("BIND_PORT").unwrap_or("8080".to_string()),10).unwrap_or(8080);
+
+    info!("Starting webserver on {}:{} and {}:{}",bindv4,port,bindv6,port);
     HttpServer::new(move || {
         App::new().app_data(state.clone()).service(post_message)
            
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind((bindv4, port))?
+    .bind((bindv6, port))?
     .run()
     .await
 }

@@ -2,6 +2,7 @@
 use crate::handlers::handler;
 use reqwest::blocking::Client;
 use crate::emoji_replacement::EmojiReplacements;
+use log::{debug};
 
 pub struct SlackHandler{
     pub url: String,
@@ -14,7 +15,7 @@ pub struct SlackHandler{
             .body(serde_json::to_string(msg).unwrap())
             .send();
         
-        println!("{}",res.unwrap().status());
+        debug!("Slack message forwarded:\n{}",res.unwrap().status());
         Ok("".to_string())
     }
 
